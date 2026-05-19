@@ -2,6 +2,7 @@
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.background = 'dark'
+vim.opt.colorcolumn = '121'
 
 -- Formatting
 vim.opt.shiftwidth = 4
@@ -19,7 +20,7 @@ vim.opt.shadafile = "NONE"
 
 -- Session: layout only — registers/history/marks are excluded because shada
 -- is disabled above; sessionoptions controls only structural state.
-vim.opt.sessionoptions = "buffers,curdir,folds,tabpages,winsize,localoptions"
+vim.opt.sessionoptions = "buffers,curdir,folds,tabpages,winsize"
 
 -- Use system clipboard
 vim.opt.clipboard = 'unnamed'
@@ -73,7 +74,48 @@ vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(args)
     local client = vim.lsp.get_client_by_id(args.data.client_id)
     if client and client.supports_method("textDocument/completion") then
-      vim.lsp.completion.enable(true, args.data.client_id, args.buf, { autotrigger = true })
+      vim.lsp.completion.enable(true, args.data.client_id, args.buf, {
+        autotrigger = false,
+        autocomplete_trigger_character_limit = -1,
+      })
+
+      -- Completion menu keybindings
+      local opts = { buffer = args.buf, silent = true }
+
+      -- Tab accepts the completion
+      vim.keymap.set("i", "<Tab>", function()
+        if vim.fn.pumvisible() == 1 then
+          return vim.fn.feedkeys(vim.api.nvim_replace_termcodes("<C-y>", true, true, true), "n")
+        else
+          return vim.fn.feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, true, true), "n")
+        end
+      end, opts)
+
+      -- Escape closes the completion menu without inserting anything
+      vim.keymap.set("i", "<Esc>", function()
+        if vim.fn.pumvisible() == 1 then
+          return vim.fn.feedkeys(vim.api.nvim_replace_termcodes("<C-e>", true, true, true), "n")
+        else
+          return vim.fn.feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, true, true), "n")
+        end
+      end, opts)
+
+      -- Enter and Space keep their normal behavior even with the popup open
+      vim.keymap.set("i", "<CR>", function()
+        if vim.fn.pumvisible() == 1 then
+          return vim.fn.feedkeys(vim.api.nvim_replace_termcodes("<C-e>", true, true, true), "n")
+        else
+          return vim.fn.feedkeys(vim.api.nvim_replace_termcodes("<CR>", true, true, true), "n")
+        end
+      end, opts)
+
+      vim.keymap.set("i", "<Space>", function()
+        if vim.fn.pumvisible() == 1 then
+          return vim.fn.feedkeys(vim.api.nvim_replace_termcodes("<C-e>", true, true, true), "n")
+        else
+          return vim.fn.feedkeys(vim.api.nvim_replace_termcodes("<Space>", true, true, true), "n")
+        end
+      end, opts)
     end
     -- gd is not a 0.11 default; K, grn, gra, grr, gri already are
     vim.keymap.set("n", "gd", vim.lsp.buf.definition, { buffer = args.buf })
