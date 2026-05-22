@@ -67,6 +67,13 @@ require("lazy").setup({
     dependencies = { "nvim-lua/plenary.nvim" },
     opts = {},
   },
+
+  -- Claude Code IDE bridge: lets `/ide` discover this Neovim, exposes the
+  -- active file and selection to a coupled Claude Code terminal.
+  {
+    "coder/claudecode.nvim",
+    opts = { terminal = { provider = "native" } },
+  },
 })
 
 -- Built-in completion (Neovim 0.11+, no plugin needed)
