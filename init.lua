@@ -170,5 +170,11 @@ vim.api.nvim_create_autocmd("VimEnter", {
       end
     end
     require("nvim-tree.api").tree.open({ find_file = true })
+    local non_tree = vim.tbl_filter(function(w)
+      return vim.bo[vim.api.nvim_win_get_buf(w)].filetype ~= "NvimTree"
+    end, vim.api.nvim_list_wins())
+    if #non_tree == 1 then
+      vim.api.nvim_set_current_win(non_tree[1])
+    end
   end,
 })
